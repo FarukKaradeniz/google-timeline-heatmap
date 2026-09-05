@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+env/
+
+# Üretilen çıktı ve kişisel veri dosyaları — asla commit etmeyin
+heatmap.html
+*.html
+Timeline.json
+Records.json
+Location History.json
+takeout-*.zip
+*.zip
+
+# OS / editör
+.DS_Store
+.vscode/
+.idea/
