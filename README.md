@@ -1,32 +1,32 @@
 # Google Timeline Heatmap
 
-Google Timeline (Konum Geçmişi) verinizden interaktif bir ısı haritası (heatmap) üreten basit bir Python scripti. [luka1199/geo-heatmap](https://github.com/luka1199/geo-heatmap) projesinden ilham alınmıştır; farkı, Google'ın 2024 sonrasında kullanıma aldığı **cihaz üzerinde saklanan Timeline** JSON formatını (`semanticSegments`) da desteklemesidir.
+A simple Python script that turns your Google Timeline (Location History) data into an interactive heatmap. It builds a single, self-contained HTML file using [Folium](https://python-visualization.github.io/folium/) and [Leaflet.js](https://leafletjs.com/) — no server, API key, or internet connection required (other than to load the map tiles).
 
-[Folium](https://python-visualization.github.io/folium/) ve [Leaflet.js](https://leafletjs.com/) kullanılarak, sonuç tek bir HTML dosyası olarak üretilir — sunucu, API anahtarı ya da internet bağlantısı gerektirmez (harita fayanslarını göstermek dışında).
+Supports both the new **on-device Timeline** JSON format that Google switched to at the end of 2024 (`semanticSegments`), and the older Google Takeout export format (`locations` array).
 
-## Özellikler
+## Features
 
-- Yeni format (**cihaz üzerinde Timeline** — `visit` / `activity` / `timelinePath`) ve eski Google Takeout formatının (`locations` dizisi) her ikisini de destekler
-- Takeout'un ham `.zip` dosyasını doğrudan kabul eder, içindeki JSON'u otomatik bulur
-- Birden fazla dosyayı tek haritada birleştirebilir
-- Tarih aralığına göre filtreleme (`--min-date` / `--max-date`)
-- Isı haritası görünümünü özelleştirme (yarıçap, bulanıklık, zoom, opaklık, harita katmanı)
+- Supports both the new on-device format (`visit` / `activity` / `timelinePath`) and the legacy Takeout format (`locations` array)
+- Accepts a raw Takeout `.zip` file directly and automatically finds the JSON inside it
+- Can merge multiple files into a single map
+- Date-range filtering (`--min-date` / `--max-date`)
+- Customizable heatmap appearance (radius, blur, zoom, opacity, map tile layer)
 
-## Verinizi indirme
+## Getting your data
 
-Google, Aralık 2024'ten itibaren Timeline verisini bulutta değil cihazınızda saklıyor. Verinizi almak için:
+Since December 2024, Google stores Timeline data on your device rather than in the cloud. To export it:
 
-**Android:** Ayarlar → Konum → Konum Hizmetleri → Timeline → **Export Timeline Data**
-**iOS:** Google Maps uygulaması → Ayarlar → Kişisel İçerik / Timeline
+**Android:** Settings → Location → Location Services → Timeline → **Export Timeline Data**
+**iOS:** Google Maps app → Settings → Personal Content / Timeline
 
-Bu, `Timeline.json` adında bir dosya indirir.
+This downloads a file named `Timeline.json`.
 
-Eski (2024 öncesi) bir Takeout arşiviniz varsa, [Google Takeout](https://takeout.google.com/)'tan "Location History (Timeline)" seçilerek alınan `Records.json` veya `.zip` dosyası da kullanılabilir.
+If you have an older (pre-2024) Takeout archive, a `Records.json` or `.zip` file exported from [Google Takeout](https://takeout.google.com/) (selecting "Location History (Timeline)") also works.
 
-## Kurulum
+## Installation
 
 ```bash
-git clone https://github.com/<kullanici-adiniz>/google-timeline-heatmap.git
+git clone https://github.com/FarukKaradeniz/google-timeline-heatmap.git
 cd google-timeline-heatmap
 
 python3 -m venv venv
@@ -35,36 +35,36 @@ source venv/bin/activate      # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-> **Not (macOS/Homebrew):** `externally-managed-environment` hatası alırsanız, yukarıdaki venv adımlarını izlediğinizden emin olun — sistem Python'ına doğrudan kurulum artık önerilmiyor.
+> **Note (macOS/Homebrew):** If you get an `externally-managed-environment` error, make sure you followed the venv steps above — installing directly into the system Python is no longer recommended.
 
-## Kullanım
+## Usage
 
 ```bash
 python geo_heatmap.py Timeline.json
 ```
 
-Bu, `heatmap.html` dosyasını oluşturur ve otomatik olarak tarayıcınızda açar.
+This generates `heatmap.html` and opens it automatically in your browser.
 
-### Diğer örnekler
+### More examples
 
 ```bash
-# Çıktı dosyasının adını belirtme
-python geo_heatmap.py Timeline.json -o harita.html
+# Custom output filename
+python geo_heatmap.py Timeline.json -o map.html
 
-# Tarih aralığına göre filtreleme
+# Filter by date range
 python geo_heatmap.py Timeline.json --min-date 2023-01-01 --max-date 2023-12-31
 
-# Birden fazla dosyayı birleştirme
+# Merge multiple files
 python geo_heatmap.py Records.json Timeline.json
 
-# Koyu tema harita katmanı ve daha büyük yarıçap
+# Dark map tiles and a larger radius
 python geo_heatmap.py Timeline.json -m "CartoDB dark_matter" -r 12 -b 8
 
-# Tarayıcıda otomatik açmadan sadece dosya üretme
+# Generate the file without opening it in a browser
 python geo_heatmap.py Timeline.json --no-open
 ```
 
-### Tüm seçenekler
+### All options
 
 ```
 usage: geo_heatmap.py [-h] [-o OUTPUT] [--min-date YYYY-MM-DD]
@@ -74,43 +74,43 @@ usage: geo_heatmap.py [-h] [-o OUTPUT] [--min-date YYYY-MM-DD]
                        file [file ...]
 
 positional arguments:
-  file                  Timeline.json, Records.json veya Takeout .zip
-                        dosyası (birden fazla olabilir)
+  file                  Timeline.json, Records.json, or a Takeout .zip file
+                        (multiple files can be passed)
 
 options:
-  -h, --help            yardımı gösterir ve çıkar
+  -h, --help            show this help message and exit
   -o OUTPUT, --output OUTPUT
-                        Çıktı HTML dosyasının yolu (varsayılan: heatmap.html)
+                        Path to the output HTML file (default: heatmap.html)
   --min-date YYYY-MM-DD
-                        En eski tarih
+                        Earliest date to include
   --max-date YYYY-MM-DD
-                        En yeni tarih
-  --map MAP, -m MAP     Harita katmanı (örn. 'OpenStreetMap',
+                        Latest date to include
+  --map MAP, -m MAP     Map tile layer (e.g. 'OpenStreetMap',
                         'CartoDB dark_matter')
   -z ZOOM_START, --zoom-start ZOOM_START
-                        Başlangıç zoom seviyesi (varsayılan: 6)
+                        Initial zoom level (default: 6)
   -r RADIUS, --radius RADIUS
-                        Her noktanın yarıçapı (varsayılan: 7)
-  -b BLUR, --blur BLUR  Bulanıklık miktarı (varsayılan: 4)
+                        Radius of each point (default: 7)
+  -b BLUR, --blur BLUR  Amount of blur (default: 4)
   -mo MIN_OPACITY, --min-opacity MIN_OPACITY
-                        Minimum opaklık (varsayılan: 0.2)
+                        Minimum opacity (default: 0.2)
   -mz MAX_ZOOM, --max-zoom MAX_ZOOM
-                        Isı haritasının maksimum zoom'u (varsayılan: 4)
-  --no-open             Oluşturduktan sonra tarayıcıda otomatik açma
+                        Maximum zoom of the heatmap (default: 4)
+  --no-open             Don't automatically open the result in a browser
 ```
 
-## Desteklenen dosya formatları
+## Supported file formats
 
-| Format | Açıklama |
+| Format | Description |
 |---|---|
-| `Timeline.json` | Telefondan "Export Timeline Data" ile alınan yeni format (`semanticSegments`) |
-| `Records.json` / `Location History.json` | Eski Google Takeout formatı (`{"locations": [...]}`) |
-| `takeout-*.zip` | Takeout'un ham `.zip` çıktısı — içindeki JSON otomatik bulunur |
+| `Timeline.json` | New on-device format, exported from your phone via "Export Timeline Data" (`semanticSegments`) |
+| `Records.json` / `Location History.json` | Legacy Google Takeout format (`{"locations": [...]}`) |
+| `takeout-*.zip` | Raw Takeout `.zip` output — the JSON inside is found automatically |
 
-## Gizlilik
+## Privacy
 
-Bu script tamamen yerel çalışır. Konum verileriniz hiçbir yere gönderilmez; yalnızca aynı makinede bir HTML dosyasına dönüştürülür. Üretilen `heatmap.html` dosyasını (veya girdi JSON dosyalarınızı) herkese açık bir yere yüklemeden önce hassas konum bilgisi içerdiğini unutmayın.
+This script runs entirely locally. Your location data is never sent anywhere; it's only converted into an HTML file on the same machine. Keep in mind that the generated `heatmap.html` (and your input JSON files) can contain sensitive location information — avoid uploading them to a public location.
 
-## Lisans
+## License
 
 [MIT](LICENSE)
